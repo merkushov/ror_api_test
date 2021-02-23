@@ -47,4 +47,6 @@ Rails.application.configure do
 
   # Annotate rendered view with file names.
   # config.action_view.annotate_rendered_view_with_filenames = true
+
+  config.visited_domains_key = 'test_visited_domains'
 end
