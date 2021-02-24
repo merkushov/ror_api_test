@@ -1,3 +1,3 @@
-REDIS_CLIENT = Redis.new(url: 'redis://127.0.0.1',
-                         port: 6379,
+REDIS_CLIENT = Redis.new(host: ENV['REDIS_HOST'],
+                         port: ENV['REDIS_PORT'],
                          db: 0)
