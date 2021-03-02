@@ -1,9 +1,6 @@
 require 'rails_helper'
 
 RSpec.describe 'Visited domains API', type: :request do
-  # from = Time.now.to_i
-  # to = Time.now.to_i + 10*60
-
   describe 'GET /visited_domains' do
     context 'without required params' do
       before { get '/visited_domains' }
@@ -71,6 +68,7 @@ RSpec.describe 'Visited domains API', type: :request do
   end
 
   describe 'POST /visited_links' do
+    let(:epoch_time) { Time.now.to_i }
     let(:valid_attributes) { { links: %w[https://google.com/query=abc https://yandex.ru/news/1/show funbox.ru/about] } }
 
     context 'the request is valid' do
@@ -81,6 +79,9 @@ RSpec.describe 'Visited domains API', type: :request do
       end
       it "returns 'ok' in the status field" do
         expect(json).to include("status" => "ok")
+      end
+      it "record in Redis created" do
+
       end
     end
 
