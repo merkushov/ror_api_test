@@ -2,7 +2,8 @@ class VisitedDomain
 
   def self.add_list(timestamp, domains)
     unless timestamp and domains and domains.kind_of?(Array)
-      return
+      raise ArgumentError,
+            "parameters 'timestamp' and 'domains' are required"
     end
 
     score_members = []
@@ -14,7 +15,8 @@ class VisitedDomain
 
   def self.show(from, to)
     unless from and to
-      return
+      raise ArgumentError,
+            "parameters 'from' and 'to' are required"
     end
 
     REDIS_CLIENT.zrangebyscore(Rails.application.config.visited_domains_key, from, to)

@@ -2,8 +2,8 @@ require 'uri'
 
 class Utils
   def self.convert_links_to_domains(links)
-    unless links.kind_of?(Array)
-      raise ArgumentError, "the first argument must be an array"
+    unless links and links.kind_of?(Array)
+      raise ArgumentError, "the 'links' parameters is required and must be an Array"
     end
 
     domains = []
