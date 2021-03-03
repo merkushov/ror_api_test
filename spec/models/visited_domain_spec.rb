@@ -95,6 +95,15 @@ RSpec.describe VisitedDomain do
         expect { described_class.show('a', 'b') }.to raise_error(ArgumentError)
       end
     end
+
+    context "Calling a method with parameters of the correct type" do
+      it "don't returns an exception for number" do
+        expect( described_class.show(1613997910, 1613997920) ).to match_array([])
+      end
+      it "don't returns an exception for the string containing a number" do
+        expect( described_class.show("1613997910", "1613997920") ).to match_array([])
+      end
+    end
   end
 
   # Is it integration test?

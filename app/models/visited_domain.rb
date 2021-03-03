@@ -29,7 +29,7 @@ class VisitedDomain
             "parameters 'from' and 'to' are required"
     end
 
-    unless from.is_a? Numeric and to.is_a? Numeric
+    unless from.to_s.match(/^\d+$/) and to.to_s.match(/^\d+$/)
       raise ArgumentError,
             "parameters 'from' and 'to' must be numeric"
     end
