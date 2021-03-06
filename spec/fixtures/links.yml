@@ -1,0 +1,52 @@
+set_1:
+  links:
+    - http://ya.ru?q=123
+    - https://google.com
+    - http://mail.ru/mail?login=user1&passord=12345
+  domains:
+    - ya.ru
+    - google.com
+    - mail.ru
+  unique_domains:
+    - ya.ru
+    - google.com
+    - mail.ru
+set_2:
+  links:
+    - https://ya.ru
+    - funbox.ru
+    - https://google.com/search?q=abc
+    - https://news.co.uk/news/spring-is-coming
+    - https://google.com/search?q=little%20red%20cap
+    - https://relishapp.com/rspec/rspec-rails/v/4-0/docs/file-fixture
+  domains:
+    - ya.ru
+    - funbox.ru
+    - google.com
+    - news.co.uk
+    - google.com
+    - relishapp.com
+  unique_domains:
+    - ya.ru
+    - funbox.ru
+    - google.com
+    - news.co.uk
+    - relishapp.com
+intersection_1_2:
+  domains:
+    - ya.ru
+    - google.com
+    - mail.ru
+    - ya.ru
+    - funbox.ru
+    - google.com
+    - news.co.uk
+    - google.com
+    - relishapp.com
+  unique_domains:
+    - ya.ru
+    - google.com
+    - mail.ru
+    - funbox.ru
+    - news.co.uk
+    - relishapp.com

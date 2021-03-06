@@ -1,107 +1,123 @@
 require 'rails_helper'
 
 RSpec.describe VisitedDomain do
-  describe "add_list" do
-    context "placing data for the first time" do
-      result = described_class.add_list( 900, %w[abc.com def.com www.klm.org xyz.me])
+  let(:test_fixtures) { yaml_fixture_file("links.yml") }
 
-      it "returns not nil" do
-        expect(result).not_to be_nil
-      end
-      it "returns correct number of items inserted - 4" do
-        expect(result).to eq(4)
+  describe "add_list" do
+    subject(:add_uniq_1) { described_class.add_list(key, uniq_domains_1) }
+    subject(:add_uniq_2) { described_class.add_list(key, uniq_domains_2) }
+
+    let(:key)                 { 900 }
+    let(:uniq_domains_1)      { test_fixtures["set_1"]["unique_domains"] }
+    let(:uniq_domains_2)      { test_fixtures["set_2"]["unique_domains"] }
+
+    context "placing data for the first time" do
+      it "returns correct number of items inserted" do
+        expect(add_uniq_1).to eq(uniq_domains_1.length)
       end
     end
 
     context "placing data for the second time" do
-      result = described_class.add_list( 900, %w[abc.com def.com xyz.me])
-      it "returns not nil" do
-        expect(result).not_to be_nil
-      end
       it "returns correct number of items inserted - 0" do
-        expect(result).to eq(0)
+        expect(add_uniq_1).to eq(0)
       end
     end
 
-    context "placing data for the third time (with one new record)" do
-      result = described_class.add_list( 900, %w[abc.com test.ru def.com xyz.me])
-      it "returns not nil" do
-        expect(result).not_to be_nil
-      end
-      it "returns correct number of items inserted - 1" do
-        expect(result).to eq(1)
+    context "placing data for the third time (with some new record)" do
+      it "returns correct number of items inserted" do
+        expect(add_uniq_2).to be > 0
       end
     end
 
     context "Calling a method with parameters of the wrong type" do
+      let(:key) { 'a' }
+      let(:uniq_domains_1) {[]}
+
       it "returns an exception for 'timestamp'" do
-        expect { described_class.show('a', []) }.to raise_error(ArgumentError)
+        expect { add_uniq_1 }.to raise_error(ArgumentError)
       end
+
+      let(:key) { 1 }
+      let(:uniq_domains_1) {{ a: 123 }}
+
       it "returns an exception for 'domains'" do
-        expect { described_class.show(1, { a: 123 }) }.to raise_error(ArgumentError)
+        expect { add_uniq_1 }.to raise_error(ArgumentError)
       end
     end
   end
 
   describe "show" do
+    subject(:show) { described_class.show(interval[0], interval[1]) }
+    subject(:show_after_add_1) do
+      described_class.add_list(interval[0], uniq_domains_1)
+      described_class.show(interval[0],interval[1])
+    end
+    subject(:show_after_add_2) do
+      described_class.add_list(interval[0], uniq_domains_2)
+      described_class.show(interval[0],interval[1])
+    end
+    let(:uniq_domains_1)    { test_fixtures["set_1"]["unique_domains"] }
+    let(:uniq_domains_2)    { test_fixtures["set_2"]["unique_domains"] }
+    let(:intersection_1_2)  { test_fixtures["intersection_1_2"]["unique_domains"] }
+
     context "An empty key (1000)" do
+      let(:interval) { [1000,1000] }
       it "contains nothing" do
-        result = described_class.show(1000,1000)
-        expect(result).to match_array([])
+        expect(show).to match_array([])
       end
     end
 
     context "After filling in the data. The query for the key (1000)" do
-      described_class.add_list(1000, %w[test.ru])
-      result = described_class.show(1000,1000)
-
-      it "returns array" do
-        expect(result).to be_a_kind_of(Array)
-      end
+      let(:interval) { [1000,1000] }
       it "with exactly the same entry that was inserted" do
-        expect(result).to contain_exactly('test.ru')
+        expect(show_after_add_1).to contain_exactly(*uniq_domains_1)
       end
     end
 
     context "An empty key (1001)" do
+      let(:interval) { [1001,1001] }
       it "contains nothing" do
-        result = described_class.show(1001,1001)
-        expect(result).to match_array([])
+        expect(show).to match_array([])
       end
     end
 
     context "After filling in the data. The query for the key (1001)" do
-      described_class.add_list(1001, %w[best.com])
-      result = described_class.show(1001,1001)
+      let(:interval) { [1001,1001] }
 
       it "with exactly the same entry that was inserted" do
-        expect(result).to contain_exactly('best.com')
+        expect(show_after_add_2).to contain_exactly(*uniq_domains_2)
       end
     end
 
     context "Data in the interval (1000,1001)" do
-      result = described_class.show(1000,1001)
+      let(:interval) { [1000,1001] }
 
-      it "returns array" do
-        expect(result).to be_a_kind_of(Array)
-      end
       it "with exactly the same entries that were inserted" do
-        expect(result).to contain_exactly('test.ru', 'best.com')
+        expect(show).to contain_exactly(*intersection_1_2)
       end
     end
 
     context "Calling a method with parameters of the wrong type" do
+      let(:interval) { ['a','b'] }
+
       it "returns an exception" do
-        expect { described_class.show('a', 'b') }.to raise_error(ArgumentError)
+        expect { show }.to raise_error(ArgumentError)
       end
     end
 
-    context "Calling a method with parameters of the correct type" do
+    context "Calling a method with parameters of the correct type (numbers)" do
+      let(:interval) { [1613997910,1613997920] }
+
       it "don't returns an exception for number" do
-        expect( described_class.show(1613997910, 1613997920) ).to match_array([])
+        expect( show ).to match_array([])
       end
-      it "don't returns an exception for the string containing a number" do
-        expect( described_class.show("1613997910", "1613997920") ).to match_array([])
+    end
+
+    context "Calling a method with parameters of the correct type (strings)" do
+      let(:interval) { ["1613997910", "1613997920"] }
+
+      it "don't returns an exception for string" do
+        expect(show).to match_array([])
       end
     end
   end
@@ -109,11 +125,13 @@ RSpec.describe VisitedDomain do
   # Is it integration test?
   describe "add_list + show" do
     context "Uploading duplicate elements" do
-      described_class.add_list(2000, %w[a1.com a2.com a3.com a1.com a2.com a4.com])
-      result = described_class.show(2000,2000)
+      subject do
+        described_class.add_list(2000, test_fixtures["set_2"]["domains"])
+        described_class.show(2000,2000)
+      end
+
       it "leads to the downloading of unique" do
-        expect(result.count).to eq(4)
-        expect(result).to contain_exactly('a1.com', 'a2.com', 'a3.com', 'a4.com')
+        expect(subject).to contain_exactly(*test_fixtures["set_2"]["unique_domains"])
       end
     end
   end

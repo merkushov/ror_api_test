@@ -1,6 +1,8 @@
 require 'rails_helper'
 
 RSpec.describe 'Visited domains API', type: :request do
+  let(:test_fixtures) { yaml_fixture_file("links.yml") }
+
   describe 'GET /visited_domains' do
     context 'without required params' do
       before { get '/visited_domains' }
@@ -35,8 +37,8 @@ RSpec.describe 'Visited domains API', type: :request do
 
     context 'for an interval with data' do
       before() do
-        VisitedDomain.add_list(100, %w[ya.ru google.com])
-        VisitedDomain.add_list(101, %w[funbox.ru])
+        VisitedDomain.add_list(100, test_fixtures["set_1"]["domains"])
+        VisitedDomain.add_list(101, test_fixtures["set_2"]["domains"])
         get '/visited_domains', params: { from: 99, to: 102 }
       end
 
@@ -49,27 +51,33 @@ RSpec.describe 'Visited domains API', type: :request do
       it "returns 'domains' as an Array" do
         expect(json['domains']).to be_a_kind_of(Array)
       end
-      it "returns 3 domains" do
-        expect(json['domains']).to contain_exactly('ya.ru', 'google.com', 'funbox.ru')
+      it "returns correct domains" do
+        expect(json['domains']).to contain_exactly(
+                                     *test_fixtures["intersection_1_2"]["unique_domains"]
+                                   )
       end
     end
 
     context 'extreme values are included in the requested interval' do
       before() do
-        VisitedDomain.add_list(200, %w[ya.ru google.com])
-        VisitedDomain.add_list(201, %w[funbox.ru])
+        VisitedDomain.add_list(200, test_fixtures["set_1"]["domains"])
+        VisitedDomain.add_list(201, test_fixtures["set_2"]["domains"])
         get '/visited_domains', params: { from: 200, to: 201 }
       end
 
-      it "returns 3 domains" do
-        expect(json['domains']).to contain_exactly('ya.ru', 'google.com', 'funbox.ru')
+      it "returns correct domains" do
+        expect(json['domains']).to contain_exactly(
+                                     *test_fixtures["intersection_1_2"]["unique_domains"]
+                                   )
       end
     end
   end
 
   describe 'POST /visited_links' do
     let(:epoch_time) { Time.now.to_i }
-    let(:valid_attributes) { { links: %w[https://google.com/query=abc https://yandex.ru/news/1/show funbox.ru/about] } }
+    let(:valid_attributes) {
+      { links: test_fixtures["set_1"]["links"] }
+    }
 
     context 'the request is valid' do
       before { post '/visited_links', params: valid_attributes }
@@ -81,7 +89,9 @@ RSpec.describe 'Visited domains API', type: :request do
         expect(json).to include("status" => "ok")
       end
       it "record in Redis created" do
-
+        expect(
+          VisitedDomain.show(epoch_time-2, epoch_time+2)
+        ).to contain_exactly(*test_fixtures["set_1"]["unique_domains"])
       end
     end
 
