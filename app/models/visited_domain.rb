@@ -18,7 +18,7 @@ class VisitedDomain
 
     score_members = []
     domains.each do |domain|
-      score_members.push(timestamp, domain)
+      score_members.push(timestamp, "#{domain}:#{timestamp}")
     end
     REDIS_CLIENT.zadd(Rails.application.config.visited_domains_key, score_members)
   end
@@ -34,6 +34,9 @@ class VisitedDomain
             "parameters 'from' and 'to' must be numeric"
     end
 
-    REDIS_CLIENT.zrangebyscore(Rails.application.config.visited_domains_key, from, to)
+    domains = REDIS_CLIENT.zrangebyscore(Rails.application.config.visited_domains_key, from, to)
+    domains.map do |domain|
+      domain.split(':')[0]
+    end.uniq
   end
 end

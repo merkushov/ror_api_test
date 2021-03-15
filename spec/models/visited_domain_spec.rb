@@ -134,5 +134,15 @@ RSpec.describe VisitedDomain do
         expect(subject).to contain_exactly(*test_fixtures["set_2"]["unique_domains"])
       end
     end
+    context "Keeping the same domain at different time stamps" do
+     subject do
+       described_class.add_list(2100, test_fixtures["set_2"]["domains"])
+       described_class.add_list(2200, test_fixtures["set_2"]["domains"])
+       described_class.show(2100,2100)
+     end
+     it "successfully" do
+       expect(subject).to contain_exactly(*test_fixtures["set_2"]["unique_domains"])
+     end
+    end
   end
 end
